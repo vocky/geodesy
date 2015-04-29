@@ -12,7 +12,8 @@
 */.svn/*
 *.bak
 */Debug/
-*/Release
+*/Release/
+
 
 # Object files
 *.o
@@ -20,6 +21,8 @@
 *.obj
 *.elf
 *.pyc
+*.d
+*.mk
 
 # Libraries
 *.lib
