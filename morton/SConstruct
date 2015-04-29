@@ -1,0 +1,7 @@
+# -*- mode: python -*-
+import os
+
+env = Environment(ENV=os.environ)
+env.Append(CFLAGS='-Os -std=gnu99')
+env.Program(['main.c', 'morton.c'])
+
