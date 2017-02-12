@@ -1,0 +1,79 @@
+0371澳门豆捞
+SELECT * FROM poiFts5Table WHERE poiFts5Table MATCH 'Patinoire' ORDER BY rank limit 0,10;
+SELECT * FROM poiFts5Table WHERE poiFts5Table MATCH '澳门豆捞' ORDER BY rank limit 0,10;
+
+unicode61
+CREATE VIRTUAL TABLE t_guides USING fts5(title, content, tokenize=unicode61);
+insert into t_guides(title, content) VALUES ('医 学 指 南', '我 是 一 篇 指 南');
+insert into t_guides(title, content) VALUES ('骨|科|指|南', '第|二|篇|指|南');
+insert into t_guides(title, content) VALUES ('专|科|指|南', '专|二|篇|指|南');
+
+select * from t_guides where t_guides match '医学指南';
+无
+select * from t_guides where t_guides match '医 学 指';
+医 学 指 南|我 是 一 篇 指 南
+select * from t_guides where t_guides match '医';
+医 学 指 南|我 是 一 篇 指 南
+select * from t_guides where t_guides match '指';
+医 学 指 南|我 是 一 篇 指 南
+骨|科|指|南|第|二|篇|指|南
+专|科|指|南|专|二|篇|指|南
+select * from t_guides where t_guides match '医 学';
+医 学 指 南|我 是 一 篇 指 南
+select * from t_guides where t_guides match '科 AND 骨';
+骨|科|指|南|第|二|篇|指|南
+select * from t_guides where t_guides match '科 NOT 骨';
+专|科|指|南|专|二|篇|指|南
+select * from t_guides where t_guides match 'NEAR(科 南,6)';
+骨|科|指|南|第|二|篇|指|南
+专|科|指|南|专|二|篇|指|南
+select * from t_guides where t_guides match 'NEAR(科 篇,2)';
+无
+select * from t_guides where t_guides match 'NEAR(科 南,0)';
+无
+
+ICU
+CREATE VIRTUAL TABLE poiFTS USING fts4(poiName, adress, tokenize=icu zh_CN);
+insert into poiFTS(poiName, adress) VALUES ('申通信息广场', '上海市长宁区淮海西路55号');
+insert into poiFTS(poiName, adress) VALUES ('申通控股', '上海市长宁区淮海西路55号申通信息广场28层');
+insert into poiFTS(poiName, adress) VALUES ('申通广场-物业管理处', '上海市长宁区淮海西路55号申通信息广场20层');
+insert into poiFTS(poiName, adress) VALUES ('用友软件', '上海市长宁区淮海西路55号申通信息广场4层');
+
+select * from poiFTS;
+select * from poiFTS WHERE poiFTS MATCH '申通信息';
+申通信息广场|上海市长宁区淮海西路55号
+申通控股|上海市长宁区淮海西路55号申通信息广场28层
+申通广场-物业管理处|上海市长宁区淮海西路55号申通信息广场20层
+用友软件|上海市长宁区淮海西路55号申通信息广场4层
+select * from poiFTS WHERE poiFTS MATCH '信息申通';
+申通信息广场|上海市长宁区淮海西路55号
+申通控股|上海市长宁区淮海西路55号申通信息广场28层
+申通广场-物业管理处|上海市长宁区淮海西路55号申通信息广场20层
+用友软件|上海市长宁区淮海西路55号申通信息广场4层
+select * from poiFTS WHERE poiFTS MATCH '信息申通' ORDER BY matchinfo(poiFTS) DESC;
+
+insert into poiFTS(poiName, adress) VALUES ('日月光台湾馆', '徐家汇路618号日月光中心广场b2');
+insert into poiFTS(poiName, adress) VALUES ('上海日月光集团', '川沙路交叉口西北60米');
+insert into poiFTS(poiName, adress) VALUES ('徐汇日月光中心', '漕宝路33号');
+insert into poiFTS(poiName, adress) VALUES ('日月光', '上海市静安区');
+insert into poiFTS(poiName, adress) VALUES ('日月光中心', '上海市黄浦区徐家汇路618号');
+select * from poiFTS WHERE poiFTS MATCH '日月光' ORDER BY matchinfo(poiFTS) DESC;
+日月光台湾馆|徐家汇路618号日月光中心广场b2
+上海日月光集团|川沙路交叉口西北60米
+徐汇日月光中心|漕宝路33号
+日月光|上海市静安区
+日月光中心|上海市黄浦区徐家汇路618号
+select * from poiFTS WHERE poiFTS MATCH '日月' ORDER BY matchinfo(poiFTS) DESC;
+无
+insert into poiFTS(poiName, adress) VALUES ('日月豪庭', '杨高南路');
+select * from poiFTS WHERE poiFTS MATCH '日' ORDER BY matchinfo(poiFTS) DESC;
+日月光台湾馆|徐家汇路618号日月光中心广场b2
+上海日月光集团|川沙路交叉口西北60米
+徐汇日月光中心|漕宝路33号
+日月光|上海市静安区
+日月光中心|上海市黄浦区徐家汇路618号
+日月豪庭|杨高南路
+
+insert into poiFTS(poiName, adress) VALUES ('国权北路/三门路(路口)', '上海市杨浦区');
+select * from poiFTS WHERE poiFTS MATCH '三门路国权北路' ORDER BY matchinfo(poiFTS) DESC;
+国权北路/三门路(路口)|上海市杨浦区

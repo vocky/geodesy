@@ -8,9 +8,7 @@ FTS5 INSTALL
 + sqlite3 src download.
 
 export CFLAGS:
-::
-
-    $ export CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
+$ export CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
 -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
 -DSQLITE_ENABLE_FTS3=1 \
 -DSQLITE_ENABLE_FTS3_PARENTHESIS=1 \
@@ -26,10 +24,8 @@ export CFLAGS:
 -fPIC"
 
 set LIBS:
-::
-
-    $ LIBS="-lm -licuuc -licutu -licuio -licui18n -licudata" ../configure --enable-static --enable-shared
-    $ make
-    $ sudo make install
+$ LIBS="-lm -licuuc -licutu -licuio -licui18n -licudata" ../configure --enable-static --enable-shared
+$ make
+$ sudo make install
 
 
