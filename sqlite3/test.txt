@@ -38,7 +38,10 @@ insert into poiFTS(poiName, adress) VALUES ('申通信息广场', '上海市长�
 insert into poiFTS(poiName, adress) VALUES ('申通控股', '上海市长宁区淮海西路55号申通信息广场28层');
 insert into poiFTS(poiName, adress) VALUES ('申通广场-物业管理处', '上海市长宁区淮海西路55号申通信息广场20层');
 insert into poiFTS(poiName, adress) VALUES ('用友软件', '上海市长宁区淮海西路55号申通信息广场4层');
+insert into poiFTS(poiName, adress) VALUES ('用友软件', '上海市''长宁区淮海西路55号申通信息广场4层');
+insert into poiFTS(poiName, adress) VALUES ('上海市社区“九子”运动协会', '上海市''长宁区淮海西路55号申通信息广场4层');
 
+select * from poiFTS WHERE poiFTS MATCH '上海市''';
 select * from poiFTS;
 select * from poiFTS WHERE poiFTS MATCH '申通信息';
 申通信息广场|上海市长宁区淮海西路55号
@@ -77,3 +80,48 @@ select * from poiFTS WHERE poiFTS MATCH '日' ORDER BY matchinfo(poiFTS) DESC;
 insert into poiFTS(poiName, adress) VALUES ('国权北路/三门路(路口)', '上海市杨浦区');
 select * from poiFTS WHERE poiFTS MATCH '三门路国权北路' ORDER BY matchinfo(poiFTS) DESC;
 国权北路/三门路(路口)|上海市杨浦区
+insert into poiFTS(poiName, adress) VALUES ('guo quan bei lu', '上海市杨浦区');
+insert into poiFTS(poiName, adress) VALUES ('guo quan bei lu/san men lu', '上海市杨浦区');
+insert into poiFTS(poiName, adress) VALUES ('san men lu', '上海市杨浦区');
+select * from poiFTS WHERE poiFTS MATCH 'san' ORDER BY matchinfo(poiFTS) DESC;
+guo quan bei lu/san men lu|上海市杨浦区
+san men lu|上海市杨浦区
+select * from poiFTS WHERE poiFTS MATCH 'san men lu' ORDER BY matchinfo(poiFTS) DESC;
+guo quan bei lu/san men lu|上海市杨浦区
+san men lu|上海市杨浦区
+select * from poiFTS WHERE poiFTS MATCH 'lu' ORDER BY matchinfo(poiFTS) DESC;
+guo quan bei lu/san men lu|上海市杨浦区
+guo quan bei lu|上海市杨浦区
+san men lu|上海市杨浦区
+
+60101 购物中心
+150500 地铁站
+150400	长途汽车站
+150500	地铁站
+150600	轻轨站
+150700	公交车站相关
+150701	旅游专线车站
+150702	普通公交站
+160000	金融保险机构
+160100	银行
+
+
+std::string str_poi = "CREATE VIRTUAL TABLE if not exists poiFtsTable USING fts4" \
+			"(poiId INTEGER NOT NULL, mortonCode INTEGER, poiName TEXT NOT NULL, " \
+             "poiSpell TEXT NOT NULL, adressName TEXT, adressSpell TEXT, " \
+			 "poiCategoryId INTEGER NOT NULL, starLevel INTEGER NOT NULL, " \
+			 "tokenize=icu zh_CN, notindexed='poiId', notindexed='mortonCode', " \
+			 "notindexed='poiCategoryId', notindexed='starLevel');";
+             
+insert into poiFtsTable(poiId, mortonCode, poiName, poiSpell, adressName, adressSpell, poiCategoryId, starLevel) VALUES (1, 1, '日月光中心', 'ri yue guang zhong xin', '上海市杨浦区', 'shang hai yang pu qu', 11, 9);   
+insert into poiFtsTable(poiId, mortonCode, poiName, poiSpell, adressName, adressSpell, poiCategoryId, starLevel) VALUES (1, 123456789121212, '日月光', 'ri yue guang', '上海市静安区', 'shang hai jin an qu', 11, 9);           
+select * from poiFtsTable WHERE poiFtsTable MATCH '信息申通';
+select * from poiFtsTable WHERE poiFtsTable MATCH '日月光'; 
+select * from poiFtsTable WHERE poiFtsTable MATCH 'ri yue';  
+select * from poiFtsTable WHERE poiFtsTable MATCH 'ri';  
+select * from poiFtsTable WHERE poiFtsTable MATCH '杨浦区';  
+select * from poiFtsTable WHERE poiFtsTable MATCH 'yue';   
+select * from poiFtsTable WHERE poiFtsTable MATCH 'san men lu';     
+
+
+select * from poiFtsTable WHERE poiFtsTable MATCH '日月光' order by starLevel DESC limit 0, 10;       
