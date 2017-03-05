@@ -124,4 +124,124 @@ select * from poiFtsTable WHERE poiFtsTable MATCH 'yue';
 select * from poiFtsTable WHERE poiFtsTable MATCH 'san men lu';     
 
 
-select * from poiFtsTable WHERE poiFtsTable MATCH '日月光' order by starLevel DESC limit 0, 10;       
+select * from poiFtsTable WHERE poiFtsTable MATCH '日月光' order by starLevel DESC limit 0, 10;     
+//首字母查询
+select * from poiFtsTable WHERE poiSpell like 's% t% x% g%' OR adressSpell like '%s% t% x% g%' order by starLevel DESC limit 0, 10;
+//全拼查询
+SELECT * FROM poiFtsTable WHERE poiFtsTable MATCH 'Shen TongXin' ORDER BY starLevel DESC LIMIT 10 OFFSET 0; 
+  
+// user function test
+CREATE VIRTUAL TABLE documents USING fts4(title, content, starLevel, notindexed='starLevel');
+
+INSERT INTO documents VALUES('hello world', 'This message is a hello world message.', 10);
+INSERT INTO documents VALUES('urgent: serious', 'This mail is seen as a more serious mail', 5);
+
+SELECT title FROM documents WHERE documents MATCH 'message';
+
+SELECT docid, hex(matchinfo(documents, 'cs')) FROM documents WHERE documents MATCH '"hello world"' LIMIT 10 OFFSET 0;
+
+SELECT docid, user_rank(matchinfo(documents, 'cs'), 1.0, 1.0, 0.0, starLevel) FROM documents WHERE documents MATCH '"hello world"' LIMIT 10 OFFSET 0;
+
+// user function test
+select * from poiFtsTable WHERE poiFtsTable MATCH '信息申通' order by user_rank(matchinfo(poiFtsTable, 'cs'), 0, 0, 0, 3, 3, 1, 1, 0, 0, starLevel) DESC limit 10 offset 0; 
+
+//20170301
+static void fts3RankFunc(sqlite3_context *pCtx, int nVal, sqlite3_value **apVal){
+  int *aMatchinfo;                /* Return value of matchinfo() */
+  int nCol, iCol;                       /* Number of columns in the table */
+  double score = 0.0;             /* Value to return */
+  int nMaxHitLength = 0;
+  double weight = 0.0;
+
+  assert( sizeof(int)==4 );
+
+  /* Check that the number of arguments passed to this function is correct.
+  ** If not, jump to wrong_number_args. Set aMatchinfo to point to the array
+  ** of unsigned integer values returned by FTS function matchinfo. Set
+  ** nPhrase to contain the number of reportable phrases in the users full-text
+  ** query, and nCol to the number of columns in the table.
+  */
+  if( nVal<1 ) goto wrong_number_args;
+  aMatchinfo = (unsigned int *)sqlite3_value_blob(apVal[0]);
+  nCol = aMatchinfo[0];
+  if( nVal!=(1+nCol+1) ) goto wrong_number_args;
+  int starLevel = sqlite3_value_int(apVal[1+nCol]);
+
+  /* Iterate through each phrase in the users query. */
+  for(iCol=0; iCol<nCol; iCol++){
+    /* Now iterate through each column in the users query. For each column,
+    ** increment the relevancy score by:
+    **
+    **   <hit length> * <column weight> + <star level>
+    **
+    */
+    nMaxHitLength = aMatchinfo[1 + iCol];
+    weight = sqlite3_value_double(apVal[iCol+1]);
+    if( nMaxHitLength>0 ){
+      score += (double)nMaxHitLength * weight;
+    }
+  }
+  score += starLevel;
+
+  sqlite3_result_double(pCtx, score);
+  return;
+
+  /* Jump here if the wrong number of arguments are passed to this function */
+wrong_number_args:
+  sqlite3_result_error(pCtx, "wrong number of arguments to function rank()", -1);
+}
+//20170302
+SELECT docid, hex(matchinfo(documents, 'cls')) FROM documents WHERE documents MATCH 'hello world' LIMIT 10 OFFSET 0;  
+SELECT docid, user_rank(matchinfo(documents, 'cls'), 1.0, 1.0, 0.0, starLevel) FROM documents WHERE documents MATCH '"hello world"' LIMIT 10 OFFSET 0;
+select * from poiFtsTable WHERE poiFtsTable MATCH '信息申通' order by user_rank(matchinfo(poiFtsTable, 'cls'), 0, 0, 0, 15, 15, 7, 7, 0, 7, 0, starLevel) DESC limit 10 offset 0;
+static void fts3RankFunc(sqlite3_context *pCtx, int nVal, sqlite3_value **apVal){
+  int *aMatchinfo;                /* Return value of matchinfo() */
+  int nCol, iCol;                       /* Number of columns in the table */
+  double score = 0.0;             /* Value to return */
+  int nMaxHitLength, nValueLength;
+  double weight = 0.0;
+
+  assert( sizeof(int)==4 );
+
+  /* Check that the number of arguments passed to this function is correct.
+  ** If not, jump to wrong_number_args. Set aMatchinfo to point to the array
+  ** of unsigned integer values returned by FTS function matchinfo. Set
+  ** nPhrase to contain the number of reportable phrases in the users full-text
+  ** query, and nCol to the number of columns in the table.
+  */
+  if( nVal<1 ) goto wrong_number_args;
+  aMatchinfo = (unsigned int *)sqlite3_value_blob(apVal[0]);
+  nCol = aMatchinfo[0];
+  if( nVal!=(1+nCol+1) ) goto wrong_number_args;
+  int starLevel = sqlite3_value_int(apVal[1+nCol]);
+
+  /* Iterate through each phrase in the users query. */
+  for(iCol=0; iCol<nCol; iCol++){
+    /* Now iterate through each column in the users query. For each column,
+    ** increment the relevancy score by:
+    **
+    **   <hit length> * <column weight> + <star level>
+    **
+    */
+    nValueLength = aMatchinfo[1 + iCol];
+    nMaxHitLength = aMatchinfo[1 + nCol + iCol];
+    weight = sqlite3_value_double(apVal[iCol+1]);
+    if( nMaxHitLength>0 ){
+      if (nMaxHitLength != nValueLength)
+        score += (double)nMaxHitLength * weight;
+      else
+        score += (double)nMaxHitLength * weight * 2;
+    }
+  }
+  score += starLevel;
+
+  sqlite3_result_double(pCtx, score);
+  return;
+
+  /* Jump here if the wrong number of arguments are passed to this function */
+wrong_number_args:
+  sqlite3_result_error(pCtx, "wrong number of arguments to function rank()", -1);
+}
+
+
+select hex(matchinfo(poiFtsTable, 's')), * from poiFtsTable WHERE poiFtsTable MATCH 's* t* x* g*' order by user_rank(matchinfo(poiFtsTable, 'cls'), 0, 0, 0, 15, 15, 7, 7, 0, 7, 0, starLevel) DESC limit 10 offset 0;

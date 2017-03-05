@@ -4,12 +4,14 @@ some test about sqlite3 fts5.
 
 FTS5 INSTALL
 ------------
++ readline install.
 + icu install.
 + sqlite3 src download.
 
 export CFLAGS:
 
-    $ export CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
+    $ export CFLAGS="-I/usr/local/include \
+    -DSQLITE_ENABLE_COLUMN_METADATA=1 \
     -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
     -DSQLITE_ENABLE_FTS3=1 \
     -DSQLITE_ENABLE_FTS3_PARENTHESIS=1 \
@@ -25,9 +27,10 @@ export CFLAGS:
     -fPIC"
 
 set LIBS:
-
+    
+    & export LDFLAGS="-L/usr/local/lib"
     $ export LIBS="-lm -licuuc -licutu -licuio -licui18n -licudata"
-    $ ../configure --enable-static --enable-shared
+    $ ../configure --enable-shared
     $ make
     $ sudo make install
 
