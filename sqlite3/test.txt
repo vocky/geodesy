@@ -245,3 +245,5 @@ wrong_number_args:
 
 
 select hex(matchinfo(poiFtsTable, 's')), * from poiFtsTable WHERE poiFtsTable MATCH 's* t* x* g*' order by user_rank(matchinfo(poiFtsTable, 'cls'), 0, 0, 0, 15, 15, 7, 7, 0, 7, 0, starLevel) DESC limit 10 offset 0;
+
+select * from poiFtsTable WHERE poiFtsTable MATCH '信息申通' order by user_rank(matchinfo(poiFtsTable, 'cls'), 0, 0, 0, 0, 15, 7, 0, 7, 0, starLevel) DESC limit 10 offset 0;
